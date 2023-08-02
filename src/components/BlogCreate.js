@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import BlogList from './BlogList';
 let id = 0;
 let initialBlogs = [];
@@ -7,14 +7,19 @@ function BlogCreate() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [blogs, setBlogs] = useState(initialBlogs);
+  const titleRef = useRef(null);
 
-  const handleBlog = (e) => {
+  const handleSubmitBlog = (e) => {
     e.preventDefault();
     setBlogs([...blogs, { id: id++, title, content }]);
     setTitle('');
     setContent('');
-    // console.log(id);
+    titleRef.current.focus();
   };
+
+  useEffect(() => {
+    titleRef.current.focus();
+  }, []);
 
   const removeBlog = (id) => {
     setBlogs(blogs.filter((blog) => blog.id != id));
@@ -25,10 +30,11 @@ function BlogCreate() {
       <h1>Write a Blog!</h1>
 
       <div className="section">
-        <form onSubmit={handleBlog}>
+        <form onSubmit={handleSubmitBlog}>
           <label className="Title label">
             Title
             <input
+              ref={titleRef}
               className="input"
               type="text"
               value={title}

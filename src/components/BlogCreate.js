@@ -1,16 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import BlogList from './BlogList';
 import { db } from './firebaseInit';
-import { collection, doc, setDoc } from 'firebase/firestore';
-// import { doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs } from 'firebase/firestore';
 
-//const cityRef = doc(db, 'cities', 'BJ');
-//setDoc(cityRef, { capital: true }, { merge: true });
-
-let id = 0;
 let initialBlogs = [];
 function BlogCreate() {
-  //   console.log(id);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [blogs, setBlogs] = useState(initialBlogs);
@@ -18,14 +12,7 @@ function BlogCreate() {
 
   const handleSubmitBlog = async (e) => {
     e.preventDefault();
-    setBlogs([...blogs, { id: id++, title, content }]);
-
-    // // Add a new document with a generated id.
-    // const docRef = await addDoc(collection(db, 'blogs'), {
-    //   title: title,
-    //   content: content,
-    // });
-    // console.log('Document written with ID: ', docRef.id);
+    setBlogs([{ title, content }, ...blogs]);
 
     const docRef = doc(collection(db, 'blogs'));
     await setDoc(docRef, {
@@ -39,6 +26,18 @@ function BlogCreate() {
 
   useEffect(() => {
     titleRef.current.focus();
+    // let initialBlogsData = [];
+    const getBlogData = async () => {
+      const querySnapshot = await getDocs(collection(db, 'blogs'));
+      const blog = querySnapshot.docs.map((doc) => {
+        return {
+          id: doc.id,
+          ...doc.data(),
+        };
+      });
+      setBlogs(blog);
+    };
+    getBlogData();
   }, []);
 
   const removeBlog = (id) => {

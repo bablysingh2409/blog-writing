@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import BlogList from './BlogList';
 import { db } from './firebaseInit';
-import { collection, doc, setDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 let initialBlogs = [];
 function BlogCreate() {
@@ -12,7 +12,7 @@ function BlogCreate() {
 
   const handleSubmitBlog = async (e) => {
     e.preventDefault();
-    setBlogs([{ title, content }, ...blogs]);
+    // setBlogs([{ title, content }, ...blogs]);
 
     const docRef = doc(collection(db, 'blogs'));
     await setDoc(docRef, {
@@ -27,21 +27,33 @@ function BlogCreate() {
   useEffect(() => {
     titleRef.current.focus();
     // let initialBlogsData = [];
-    const getBlogData = async () => {
-      const querySnapshot = await getDocs(collection(db, 'blogs'));
-      const blog = querySnapshot.docs.map((doc) => {
+    // const getBlogData = async () => {
+    //   const querySnapshot = await getDocs(collection(db, 'blogs'));
+    //   const blog = querySnapshot.docs.map((doc) => {
+    //     return {
+    //       id: doc.id,
+    //       ...doc.data(),
+    //     };
+    //   });
+    //   setBlogs(blog);
+    // };
+    // getBlogData();
+    const unsub = onSnapshot(collection(db, 'blogs'), (snapShot) => {
+      const blog = snapShot.docs.map((doc) => {
         return {
           id: doc.id,
           ...doc.data(),
         };
       });
       setBlogs(blog);
-    };
-    getBlogData();
+    });
   }, []);
 
-  const removeBlog = (id) => {
-    setBlogs(blogs.filter((blog) => blog.id != id));
+  const removeBlog = async (id) => {
+    // setBlogs(blogs.filter((blog) => blog.id != id));
+    console.log(id);
+
+    await deleteDoc(doc(db, 'blogs', id));
   };
 
   return (
